@@ -95,7 +95,7 @@ Provision Neon from Vercel **Storage → Connect Database → Neon**. It injects
 2. Developer → Apps → Create App → grab App API key (`apik_...`) → `WHOP_APP_API_KEY`.
 3. App OAuth tab → grab Client ID (`app_...`) + Client Secret → `WHOP_CLIENT_ID` / `WHOP_CLIENT_SECRET`.
 4. Add two OAuth Redirect URIs: `${NEXT_PUBLIC_APP_URL}/api/auth/callback` **and** `http://localhost:3000/api/auth/callback`.
-5. Developer → Company API Keys → Create new key (`apik_...`) → `WHOP_COMPANY_API_KEY`. This one has `access_pass:create` scope; the App API key does not.
+5. Developer → Company API Keys → Create new key (`apik_...`) → `WHOP_COMPANY_API_KEY`. Grant it the full set of scopes the tutorial uses end-to-end: `access_pass:create`, `plan:create`, `checkout_configuration:create`, `accounts:create`, `membership:update`, `promo_code:create`, `payout:transfer_funds`. The App API key does not have these.
 
 **Env vars** — add to Vercel first (Production/Preview/Development), then `vercel env pull .env.local`. Sensitive ones come down empty; paste manually for local dev.
 

@@ -76,7 +76,8 @@ Follow this checklist when promoting from sandbox to production. Do it once, in 
 4. **Create the production webhook**:
    - Business Settings → Webhooks → Create webhook
    - URL: `https://your-domain.com/api/webhooks/whop`
-   - Events: `payment.succeeded`, `payment.failed`, `payment.refunded`, `membership.activated`, `membership.deactivated`
+   - Events: `payment.succeeded`, `payment.failed`, `refund.created`, `membership.activated`, `membership.deactivated`
+   - Make sure the endpoint is on **API version v1**
    - Copy the signing secret → `WHOP_WEBHOOK_SECRET`. **No trailing newline** — paste carefully or use the Vercel CLI with `--value`.
 5. **Save an operator card** on the platform company (Business Settings → Payment Methods). Optional but needed if the Partner Program cron ever needs to top up the platform balance — store the payment method id as `OPERATOR_TOPUP_PAYMENT_METHOD_ID`.
 
