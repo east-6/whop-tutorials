@@ -25,7 +25,7 @@ Storyline Plus is **one** recurring `renewal` plan on the platform's own company
 
 > `products.create` and `plans.create` require the **company** API key, not the app key — the script uses `getCompanyWhop()`. `initial_price` / `renewal_price` are **dollars as numbers**, not cents.
 
-Register one webhook endpoint at `${APP_URL}/api/webhooks/whop` on **API version v1**, listening for `payment.succeeded`, `payment.failed`, `membership.activated`, `membership.deactivated`, `refund.created`. The signing secret goes into `WHOP_WEBHOOK_SECRET`.
+Register one webhook endpoint on **API version v1** at `<NEXT_PUBLIC_APP_URL>/api/webhooks/whop` — i.e. your deployed Vercel alias with `/api/webhooks/whop` appended, like `https://storyline-six.vercel.app/api/webhooks/whop`. Subscribe to `payment.succeeded`, `payment.failed`, `membership.activated`, `membership.deactivated`, `refund.created`. The signing secret goes into `WHOP_WEBHOOK_SECRET`.
 
 The pricing page at `/membership` is a static marketing page (hero, benefits, pricing card) that mounts `<MembershipCTA>`. The CTA button either redirects to `/api/auth/login?returnTo=/membership` if signed out, or opens `<PlusCheckoutPopup>` if signed in.
 
