@@ -25,7 +25,7 @@ Storyline Plus is **one** recurring `renewal` plan on the platform's own company
 
 > `products.create` and `plans.create` require the **company** API key, not the app key — the script uses `getCompanyWhop()`. `initial_price` / `renewal_price` are **dollars as numbers**, not cents.
 
-Register one webhook endpoint on **API version v1** at `<NEXT_PUBLIC_APP_URL>/api/webhooks/whop` — i.e. your deployed Vercel alias with `/api/webhooks/whop` appended, like `https://storyline-six.vercel.app/api/webhooks/whop`. Subscribe to `payment.succeeded`, `payment.failed`, `membership.activated`, `membership.deactivated`, `refund.created`. The signing secret goes into `WHOP_WEBHOOK_SECRET`.
+Register one webhook endpoint on **API version v1** at `<NEXT_PUBLIC_APP_URL>/api/webhooks/whop` — i.e. your deployed Vercel alias with `/api/webhooks/whop` appended, like `https://storyline-six.vercel.app/api/webhooks/whop`. Subscribe to `payment_succeeded`, `payment_failed`, `membership_activated`, `membership_deactivated`, `refund_created` (the dashboard labels them with underscores; the payload `type` arrives dotted, e.g. `payment.succeeded`). The signing secret goes into `WHOP_WEBHOOK_SECRET`.
 
 The pricing page at `/membership` is a static marketing page (hero, benefits, pricing card) that mounts `<MembershipCTA>`. The CTA button either redirects to `/api/auth/login?returnTo=/membership` if signed out, or opens `<PlusCheckoutPopup>` if signed in.
 
@@ -1289,7 +1289,7 @@ Deploy steps:
 1. In Whop production company dashboard: create the app, copy App API key + Client ID/Secret + Company API key.
 2. Register OAuth redirect URI `https://yourdomain.com/api/auth/callback` (must match `WHOP_REDIRECT_URI` character-for-character — including trailing slash).
 3. Run plan creation script against prod creds: `WHOP_COMPANY_API_KEY=apik_prod_xxx WHOP_COMPANY_ID=biz_prod_xxx WHOP_SANDBOX=false npx tsx scripts/create-plus-plan.ts` — save the printed `plan_id` as production `STORYLINE_PLUS_PLAN_ID`.
-4. Register production webhook at `https://yourdomain.com/api/webhooks/whop` on **API version v1**, listening for `payment.succeeded`, `payment.failed`, `membership.activated`, `membership.deactivated`, `refund.created`. Save the signing secret as production `WHOP_WEBHOOK_SECRET`.
+4. Register production webhook at `https://yourdomain.com/api/webhooks/whop` on **API version v1**, subscribed to `payment_succeeded`, `payment_failed`, `membership_activated`, `membership_deactivated`, `refund_created` (dashboard underscore labels; payload arrives dotted). Save the signing secret as production `WHOP_WEBHOOK_SECRET`.
 5. Swap all Whop env vars in Vercel Production env (table above), pull locally with `vercel env pull .env.local --environment=production`.
 6. Run `npx tsx prisma/seed-clear.ts` to remove fictional writers.
 7. Run preflight; fix any `[FAIL]`.
