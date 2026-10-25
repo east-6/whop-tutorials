@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 import { withWhopAppConfig } from "@whop/react/next.config";
 
 const csp = [
-  "frame-src https://*.whop.com",
+  // Production frames load from bare whop.com, which *.whop.com doesn't match.
+  "frame-src https://whop.com https://*.whop.com",
   // t.whop.tw is the attribution script the express checkout button loads.
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.whop.com https://t.whop.tw https://cdn.plaid.com",
   "connect-src 'self' https://api.whop.com https://sandbox-api.whop.com https://*.whop.com",

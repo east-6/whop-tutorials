@@ -22,7 +22,7 @@ No database and no webhooks. The only state is an encrypted session cookie holdi
 - `app/api/verify/route.ts` - the trust boundary: `payments.retrieve`, product and status guards, then the session write
 - `components/TeardownLab.tsx` - the six panels, the wire log, and the retry loop that polls while a payment settles
 - `components/steps.ts` - the walkthrough copy, one entry per panel
-- `lib/whop.ts` - the SDK client, including the sandbox `baseURL` override
+- `lib/whop.ts` - the `@whop/sdk` 2.4.0 client, which picks `WhopEnvironment.Sandbox` when `WHOP_SANDBOX` is `true`
 - `lib/session.ts` - the iron-session cookie that survives the redirect
 - `app/api/inspect/route.ts` - returns the raw payment JSON the panels annotate
 - `scripts/setup.mjs` - provisions the demo product and writes `constants/whop-ids.ts`

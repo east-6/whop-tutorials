@@ -23,7 +23,8 @@ export interface ReceiptSummary {
   id: string;
   status: string;
   substatus: string | null;
-  total: number;
+  // A money object since SDK 1.1.0: amount is a decimal string ("5.00").
+  total: { amount: string; currency: string } | null;
   currency: string;
   paidAt: string | null;
   cardBrand: string | null;
@@ -414,7 +415,7 @@ export function TeardownLab({
                 {callbackReceipt.id}
               </Code>
               <Text size="1" color="gray">
-                ${callbackReceipt.total}{" "}
+                ${callbackReceipt.total?.amount ?? ""}{" "}
                 {callbackReceipt.currency.toUpperCase()}
                 {callbackReceipt.cardLast4
                   ? ` · ${callbackReceipt.cardBrand ?? "card"} ending ${callbackReceipt.cardLast4}`
@@ -443,7 +444,7 @@ export function TeardownLab({
             {inspectBusy
               ? "Retrieving..."
               : callbackReceipt
-                ? `Run payments.retrieve("${callbackReceipt.id.slice(0, 10)}...")`
+                ? `Run payments.retrieve({ id: "${callbackReceipt.id.slice(0, 10)}..." })`
                 : "Run payments.retrieve (buy in step 2 first)"}
           </Button>
           {inspect !== null && (

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NotFoundError } from "@whop/sdk";
+import { Whop } from "@whop/sdk";
 import { WHOP_IDS } from "@/constants/whop-ids";
 import { getSession } from "@/lib/session";
 import { getWhop } from "@/lib/whop";
@@ -10,8 +10,6 @@ const bodySchema = z.object({
   stateId: z.string().max(80).optional(),
 });
 
-// Both completion paths land here: the button's client events are UX, and
-// only this server-side payments.retrieve decides what a receipt is worth.
 export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
@@ -21,17 +19,15 @@ export async function POST(request: Request) {
 
   let payment;
   try {
-    payment = await getWhop().payments.retrieve(parsed.data.receiptId);
+    payment = await getWhop().payments.retrieve({ id: parsed.data.receiptId });
   } catch (error: unknown) {
-    if (error instanceof NotFoundError) {
-      // Right after checkout the payment can take a moment to become
-      // readable. The client treats 404 as "try again shortly".
+    if (error instanceof Whop.NotFoundError) {
       return Response.json({ error: "not_found" }, { status: 404 });
     }
     throw error;
   }
 
-  if (payment.product?.id !== WHOP_IDS.productId) {
+  if (payment.product_id !== WHOP_IDS.productId) {
     return Response.json({ error: "wrong_product" }, { status: 403 });
   }
   if (payment.status === "pending" || payment.status === "open") {
@@ -59,8 +55,8 @@ export async function POST(request: Request) {
       total: payment.total,
       currency: payment.currency,
       paidAt: payment.paid_at,
-      cardBrand: payment.payment_method?.card?.brand ?? null,
-      cardLast4: payment.payment_method?.card?.last4 ?? null,
+      cardBrand: payment.payment_instrument?.card?.brand ?? null,
+      cardLast4: payment.payment_instrument?.card?.last4 ?? null,
     },
   });
 }

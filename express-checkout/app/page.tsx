@@ -19,17 +19,17 @@ async function summarize(
 ): Promise<ReceiptSummary | null> {
   if (!paymentId) return null;
   try {
-    const payment = await getWhop().payments.retrieve(paymentId);
+    const payment = await getWhop().payments.retrieve({ id: paymentId });
     if (payment.status !== "paid") return null;
     return {
       id: payment.id,
       status: payment.status ?? "unknown",
       substatus: payment.substatus,
-      total: payment.total ?? 0,
+      total: payment.total,
       currency: payment.currency ?? "usd",
       paidAt: payment.paid_at,
-      cardBrand: payment.payment_method?.card?.brand ?? null,
-      cardLast4: payment.payment_method?.card?.last4 ?? null,
+      cardBrand: payment.payment_instrument?.card?.brand ?? null,
+      cardLast4: payment.payment_instrument?.card?.last4 ?? null,
     };
   } catch {
     return null;
@@ -46,9 +46,12 @@ export default async function Home({
   const session = await getSession();
   const params = await searchParams;
 
-  const plan = await whop.plans.retrieve(WHOP_IDS.planId);
-  const productTitle = plan.product?.title ?? "Demo pass";
-  const price = plan.initial_price ?? 5;
+  const [plan, product] = await Promise.all([
+    whop.variants.retrieve({ id: WHOP_IDS.planId }),
+    whop.products.retrieve({ id: WHOP_IDS.productId }),
+  ]);
+  const productTitle = product.title;
+  const price = plan.initial_price;
 
   const [initialCallback, initialRedirect] = await Promise.all([
     summarize(session.callbackPaymentId),

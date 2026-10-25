@@ -14,8 +14,6 @@ type Env = z.infer<typeof envSchema>;
 
 let cached: Env | null = null;
 
-// Parses on first call instead of at import time, so `next build` can
-// collect page data without real env values present.
 export function getEnv(): Env {
   if (cached) return cached;
   cached = envSchema.parse({
