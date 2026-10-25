@@ -49,14 +49,14 @@ npm install -g @whop/cli
 export WHOP_API_BASE_URL=https://sandbox-api.whop.com/api/v1
 export WHOP_API_KEY=apik_XXXXXXXX
 whop products create --title "Pro membership" --visibility visible
-whop plans create --product_id prod_XXXXXXXX --plan_type renewal --initial_price 0 --renewal_price 29 --billing_period 30
+whop variants create --product_id prod_XXXXXXXX --plan_type renewal --initial_price 0 --renewal_price 29 --billing_period 30
 ```
 
 Sandbox test cards: `4242 4242 4242 4242` succeeds, `4000 0000 0000 0002` declines, and `4000 0000 0000 0341` subscribes but fails later renewals.
 
 ## Sandbox behaviour this demo relies on
 
-Verified live, 2026-10-09 and 2026-10-12.
+Verified live, 2026-10-09 and 2026-10-12. The checkout, the four changes, the fee rows and a signed webhook delivery ran again on `@whop/sdk` 2.4.0 on 2026-10-25.
 
 - Whop Elements runs against the sandbox with `environment="sandbox"`, even though the sandbox guide says Elements are not available there yet.
 - After a payment, Elements moves the tab to Whop's own return page unless the checkout configuration has a `redirect_url`. With one, the buyer comes back with `payment_id` and `status=success`. Whop only accepts an https `redirect_url`, so a localhost run stays on Whop's page after paying.
