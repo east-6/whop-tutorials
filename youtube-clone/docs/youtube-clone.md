@@ -1206,7 +1206,7 @@ Described: `/create-channel` renders a form (name, lowercase @handle, optional b
 
 ### Upload a video (Vercel Blob, browser-direct)
 
-Videos never touch the server: the client asks the token route for a signed upload, PUTs the file straight to Blob, captures the duration and poster frames from a local `<video>` element, uploads the chosen poster the same way, then calls the `createVideo` server action, which lands the row directly in `READY` (no transcoding, so no processing webhook).
+Videos never touch the server: the client asks the token route for a signed upload into the channel's own folder (`videos/<channelId>/...` and `thumbnails/<channelId>/...`, and the route refuses any other path), PUTs the file straight to Blob, captures the duration and poster frames from a local `<video>` element, uploads the chosen poster the same way, then calls the `createVideo` server action, which lands the row directly in `READY` (no transcoding, so no processing webhook).
 
 ### `src/app/api/blob/upload/route.ts`
 
@@ -1239,7 +1239,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const json = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async () => {
+      onBeforeGenerateToken: async (pathname) => {
         const user = await getCurrentUser();
         if (!user) throw new Error("You must be signed in to upload.");
         const channel = await prisma.channel.findUnique({
@@ -1247,6 +1247,12 @@ export async function POST(request: Request): Promise<NextResponse> {
           select: { id: true },
         });
         if (!channel) throw new Error("Create a channel before uploading.");
+        // Every upload goes into the channel's own folder, so a file's path
+        // tells the server whose it is (see isChannelBlob in studio/actions.ts).
+        const [folder, owner] = pathname.split("/");
+        if (!["videos", "thumbnails"].includes(folder) || owner !== channel.id) {
+          throw new Error("Uploads must go into your channel's folder.");
+        }
 
         return {
           allowedContentTypes: ALLOWED_CONTENT_TYPES,
@@ -1375,7 +1381,7 @@ function sanitize(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 80) || "video";
 }
 
-export function Uploader() {
+export function Uploader({ channelId }: { channelId: string }) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
@@ -1438,7 +1444,9 @@ export function Uploader() {
     setError(null);
     try {
       const base = sanitize(file.name);
-      const videoBlob = await upload(`videos/${base}`, file, {
+      // Uploads go into our channel's own folder. The token route refuses
+      // any other path, and only files there can be saved or deleted.
+      const videoBlob = await upload(`videos/${channelId}/${base}`, file, {
         access: "public",
         handleUploadUrl: "/api/blob/upload",
         contentType: file.type,
@@ -1449,7 +1457,7 @@ export function Uploader() {
       const poster = chosenThumb();
       if (poster) {
         const thumb = await upload(
-          `thumbnails/${base}.jpg`,
+          `thumbnails/${channelId}/${base}.jpg`,
           new File([poster], `${base}.jpg`, { type: "image/jpeg" }),
           {
             access: "public",
@@ -1687,7 +1695,7 @@ export function Uploader() {
 }
 ```
 
-The `createVideo` server action (described): requires the signed-in user's channel, validates with `createVideoSchema`, rounds the fractional duration, auto-detects portrait clips ≤ 3 minutes as Waves (`isShort`), coerces `membersOnly` off when the channel has no memberships, and redirects to the studio.
+The `createVideo` server action (described): requires the signed-in user's channel, validates with `createVideoSchema`, checks that `videoUrl` and `thumbnailUrl` are https URLs in this channel's own Blob folder (exact store host, no query, no nested path), rounds the fractional duration, auto-detects portrait clips ≤ 3 minutes as Waves (`isShort`), coerces `membersOnly` off when the channel has no memberships, and redirects to the studio.
 
 ### Watch, feed, channel, search, studio
 
@@ -1697,7 +1705,7 @@ All standard queries + UI — described:
 - **Home feed** (`/`): PUBLIC + READY, newest first, in a responsive card grid; category chips filter server-side via `?chip=` — guard the lookup with `Object.hasOwn` so `?chip=constructor` can't walk the prototype chain into a Prisma error.
 - **Channel page** (`/@handle`): banner, avatar, name/@handle/subs/count, bio, video grid.
 - **Search** (`/results`): case-insensitive contains-match on title, channel name, or handle; wide list rows.
-- **Studio** (`/studio/videos` + `/studio/video/[id]`): owner's content table (thumb, title, visibility, date, views) and an edit form (title/description/category/visibility/thumbnail/Wave flag/members-only) plus delete, which also removes the backing Blob asset (`del(pathname)`) for blob-store URLs.
+- **Studio** (`/studio/videos` + `/studio/video/[id]`): owner's content table (thumb, title, visibility, date, views) and an edit form (title/description/category/visibility/thumbnail/Wave flag/members-only) plus delete, which also removes the backing Blob files with `del()`, but only files in the owner's own channel folder, checked again on the server, so a video saved with someone else's file URL can never delete that file.
 
 ## Part 3: Engagement and library
 
