@@ -30,7 +30,7 @@ Next.js 16 (App Router), React 19, Tailwind CSS v4, Whop OAuth + Whop for Platfo
 - `/api/auth/callback` - OAuth callback, token exchange, user upsert
 - `/api/auth/logout` - Session destroy (POST only)
 - `/api/sell/onboard` - Create connected account + KYC
-- `/api/sell/complete-kyc` - Mark KYC complete
+- `/api/sell/complete-kyc` - Mark KYC complete once Whop approves the identity check
 - `/api/sell/profile` - PATCH seller headline/bio
 - `/api/sell/products` - POST create product
 - `/api/sell/products/[productId]` - PATCH update, DELETE remove
@@ -313,7 +313,7 @@ export const WHOP_OAUTH_BASE = isSandbox
 
 - **`src/lib/prisma.ts`** - PrismaClient singleton with `PrismaPg` adapter and `Pool` from `pg`. Uses `env.DATABASE_URL` (pooled connection). Stored on `globalThis` to prevent connection exhaustion during dev hot reloads.
 - **`src/lib/session.ts`** - iron-session encrypted cookie named `shelfie_session`. Stores `userId` and `whopUserId`. Uses `env.SESSION_SECRET`.
-- **`src/lib/auth.ts`** - Three auth levels: `getAuthUser()` returns user or null, `requireAuth()` redirects to `/sign-in`, `requireSeller()` redirects to `/sell` if no KYC-complete SellerProfile. Also exports `completeKycIfNeeded(userId)` for KYC return flow.
+- **`src/lib/auth.ts`** - Three auth levels: `getAuthUser()` returns user or null, `requireAuth()` redirects to `/sign-in`, `requireSeller()` redirects to `/sell` if no KYC-complete SellerProfile. Also exports `completeKycIfNeeded(userId)` for the KYC return flow. It reads the connected account with `getCompanyWhop().accounts.retrieve()` and only sets `kycComplete` when `account.verification.individual` or `.business` has status `approved`, because anyone can open the return URL.
 - **`src/lib/utils.ts`** - `cn()` (Tailwind class merge), `formatPrice(cents)` (returns "$X.XX" or "Free"), `generateSlug(title)` and `generateUsername(name)` (append random suffix for uniqueness), `formatFileSize(bytes)`.
 - **`prisma.config.ts`** - Loads `.env.local` via dotenv, uses `DATABASE_URL_UNPOOLED` for CLI operations.
 
@@ -569,8 +569,8 @@ export async function POST() {
 ### Other Onboarding Files
 
 - **`src/app/sell/page.tsx`** - Client component wrapped in `Suspense`. Pitches users on selling, POSTs to `/api/sell/onboard`. Shows sandbox success message or KYC incomplete warning (`?kyc=incomplete`). Button text toggles between "Get Started" and "Complete Verification".
-- **`src/app/sell/kyc-return/page.tsx`** - Calls `/api/sell/complete-kyc` to flip `kycComplete = true`, then redirects to dashboard.
-- **`src/app/api/sell/complete-kyc/route.ts`** - POST endpoint that calls `completeKycIfNeeded(userId)`.
+- **`src/app/sell/kyc-return/page.tsx`** - Calls `/api/sell/complete-kyc`, then redirects to the dashboard, or back to `/sell?kyc=incomplete` when Whop hasn't approved the identity check yet.
+- **`src/app/api/sell/complete-kyc/route.ts`** - POST endpoint that calls `completeKycIfNeeded(userId)` and answers 409 until Whop approves the identity check.
 
 ## File Uploads (UploadThing)
 
