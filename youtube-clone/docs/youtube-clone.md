@@ -1695,6 +1695,8 @@ export function Uploader({ channelId }: { channelId: string }) {
 }
 ```
 
+The upload page (`/studio/upload`) is a server component that calls `requireChannel()` and renders `<Uploader channelId={channel.id} />`, so the uploader knows which folder to upload into.
+
 The `createVideo` server action (described): requires the signed-in user's channel, validates with `createVideoSchema`, checks that `videoUrl` and `thumbnailUrl` are https URLs in this channel's own Blob folder (exact store host, no query, no nested path), rounds the fractional duration, auto-detects portrait clips ≤ 3 minutes as Waves (`isShort`), coerces `membersOnly` off when the channel has no memberships, and redirects to the studio.
 
 ### Watch, feed, channel, search, studio
