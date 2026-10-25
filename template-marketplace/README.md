@@ -215,11 +215,12 @@ Set `WHOP_SANDBOX=true` in `.env.local` during development. `lib/whop.ts` then p
 6. Update the Whop webhook URL to `https://<your-app>.vercel.app/api/webhooks/whop`. Ensure "Connected account events" is enabled.
 7. The build pipeline is configured via `vercel.ts`: `prisma generate && prisma db push && next build`.
 
-For the full sandbox-to-production switch (rotating App + Company API keys, recreating webhooks, swapping `WHOP_COMPANY_ID`), see the production section of [the article](https://whop.com/blog/build-a-template-marketplace/).
+For the full sandbox-to-production switch (rotating App + Company API keys, recreating webhooks, swapping `WHOP_COMPANY_ID`), see Section 13 of [`docs/template-marketplace.md`](docs/template-marketplace.md).
 
 ## Documentation
 
 - [How to build a template marketplace with Next.js and Whop](https://whop.com/blog/build-a-template-marketplace/) - The full tutorial this folder accompanies
+- [`docs/template-marketplace.md`](docs/template-marketplace.md) - Condensed reference walkthrough, also what the article's "Build this with AI" button downloads: full code for every Whop SDK interaction (dual-client setup, OAuth callback, onboarding, publish flow, webhook handler, promo codes, payouts portal), Prisma schema, UploadThing two-route pattern, and the Whop SDK + integration gotchas checklist
 - [Whop docs](https://docs.whop.com/) - Connected accounts, application fees, payouts, webhooks
 - [UploadThing docs](https://docs.uploadthing.com/) - File router config, typed React helpers
 
