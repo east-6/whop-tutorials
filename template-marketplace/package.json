@@ -17,7 +17,7 @@
     "clsx": "^2.1.1",
     "iron-session": "^8.0.4",
     "lucide-react": "^1.14.0",
-    "next": "16.2.4",
+    "next": "16.4.3",
     "pg": "^8.20.0",
     "prisma": "7.10.1",
     "react": "19.2.4",
@@ -35,7 +35,7 @@
     "@vercel/config": "^0.3.0",
     "dotenv": "^17.4.2",
     "eslint": "^9",
-    "eslint-config-next": "16.2.4",
+    "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
