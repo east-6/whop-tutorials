@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
-import Whop from '@whop/sdk';
+import { WhopClient, WhopEnvironment } from '@whop/sdk';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -24,8 +24,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const client = new Whop({ apiKey });
-    const config = await client.checkoutConfigurations.retrieve(session_id);
+    const client = new WhopClient({
+      token: apiKey,
+      environment:
+        process.env.NEXT_PUBLIC_WHOP_ENVIRONMENT === 'production'
+          ? WhopEnvironment.Production
+          : WhopEnvironment.Sandbox,
+    });
+    const config = await client.checkoutConfigurations.retrieve({ id: session_id });
 
     const meta = (config.metadata || {}) as Record<string, string>;
     const gigId = meta.gig_id;

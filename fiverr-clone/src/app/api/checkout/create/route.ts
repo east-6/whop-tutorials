@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
-import Whop from '@whop/sdk';
+import { WhopClient, WhopEnvironment } from '@whop/sdk';
 import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
@@ -75,20 +75,22 @@ export async function POST(request: NextRequest) {
       : `${gigTitle} – ${packageTitle}`;
     const productTitle = rawTitle.length > 30 ? rawTitle.slice(0, 27) + '...' : rawTitle;
 
-    const client = new Whop({ apiKey });
+    const client = new WhopClient({
+      token: apiKey,
+      environment:
+        process.env.NEXT_PUBLIC_WHOP_ENVIRONMENT === 'production'
+          ? WhopEnvironment.Production
+          : WhopEnvironment.Sandbox,
+    });
 
     const checkoutConfig = await client.checkoutConfigurations.create({
       mode: 'payment',
       plan: {
-        company_id: seller.whop_company_id,
+        account_id: seller.whop_company_id,
         currency: 'usd',
         initial_price: totalDollars,
         plan_type: 'one_time',
         title: productTitle,
-        product: {
-          external_identifier: `gig_${gig.id}_pkg_${packageId}`,
-          title: productTitle,
-        },
       },
       metadata: {
         gig_id: gig.id,
