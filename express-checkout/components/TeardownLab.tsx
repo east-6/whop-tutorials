@@ -250,12 +250,17 @@ export function TeardownLab({
     [log, offset, verifyReceipt],
   );
 
-  // The wallet row has no "nothing to show" event. Its frame stays 0px tall,
-  // so the demo measures it shortly after the element reports ready.
+  // The wallet row has no "nothing to show" event. Its frame shows a loading
+  // placeholder, then shrinks to 0px when no wallet can render, so the demo
+  // watches it for up to 8 seconds after the element reports ready.
   const measureWalletRow = useCallback(() => {
-    window.setTimeout(() => {
+    let checks = 0;
+    const timer = window.setInterval(() => {
       const frame = walletBoxRef.current?.querySelector("iframe");
       const height = Math.round(frame?.getBoundingClientRect().height ?? 0);
+      checks++;
+      if (height > 0 && checks < 16) return;
+      window.clearInterval(timer);
       log(
         "wallet row",
         height === 0
@@ -263,7 +268,7 @@ export function TeardownLab({
           : `${height}px tall, wallet buttons showed up`,
       );
       setWallet(height === 0 ? "none" : "shown");
-    }, 1500);
+    }, 500);
   }, [log]);
 
   const runInspect = useCallback(async () => {
