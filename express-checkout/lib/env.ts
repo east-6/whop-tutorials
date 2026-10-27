@@ -7,7 +7,7 @@ const envSchema = z.object({
     .optional()
     .transform((v) => v === "true"),
   SESSION_SECRET: z.string().min(32),
-  APP_URL: z.string().url(),
+  APP_URL: z.url(),
 });
 
 type Env = z.infer<typeof envSchema>;

@@ -7,7 +7,6 @@ import { getWhop } from "@/lib/whop";
 const bodySchema = z.object({
   receiptId: z.string().regex(/^pay_[A-Za-z0-9]{4,60}$/),
   path: z.enum(["callback", "redirect"]),
-  stateId: z.string().max(80).optional(),
 });
 
 export async function POST(request: Request) {
@@ -33,7 +32,7 @@ export async function POST(request: Request) {
   if (payment.status === "pending" || payment.status === "open") {
     return Response.json({ status: "pending" }, { status: 202 });
   }
-  if (payment.status !== "paid") {
+  if (payment.status !== "paid" || payment.substatus?.includes("refund")) {
     return Response.json({ error: "not_paid" }, { status: 403 });
   }
 
@@ -42,7 +41,6 @@ export async function POST(request: Request) {
     session.callbackPaymentId = payment.id;
   } else {
     session.redirectPaymentId = payment.id;
-    session.redirectStateId = parsed.data.stateId;
   }
   await session.save();
 

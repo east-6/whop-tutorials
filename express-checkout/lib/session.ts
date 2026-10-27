@@ -5,7 +5,6 @@ import { getEnv } from "@/lib/env";
 export interface SessionData {
   callbackPaymentId?: string;
   redirectPaymentId?: string;
-  redirectStateId?: string;
 }
 
 export function sessionOptions(): SessionOptions {
